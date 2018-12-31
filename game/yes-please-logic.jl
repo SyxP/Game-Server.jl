@@ -1,6 +1,4 @@
-using Random
-
-mutable struct YesPleaseGame
+mutable struct YesPleaseGame <: Game
 
     # List of Players in Turn Order. UserList[1] is first player
     UserList::Vector{String}
@@ -56,7 +54,7 @@ function moveNextPlayer(game::YesPleaseGame)
     game.CurrPlayer += 1
     if game.CurrPlayer > numPlayers(game)
         game.CurrPlayer -= numPlayers(game)
-    end 
+    end
     nothing
 end
 
@@ -72,7 +70,7 @@ function rejectCard(game::YesPleaseGame, handle::String)
     gameEnded(game)                 && return "game-ended"
     (handle != getCurrHandle(game)) && return "wrong-player"
     (0      >= getCurrTokens(game)) && return "insufficient-tokens"
-    
+
     game.TokenOnCard += 1
     game.TokensLeft[game.CurrPlayer] -= 1
     moveNextPlayer(game)
@@ -83,7 +81,7 @@ end
 function acceptCard(game::YesPleaseGame, handle::String)
     gameEnded(game)                 && return "game-ended"
     (handle != getCurrHandle(game)) && return "wrong-player"
-	
+
     game.TokensLeft[game.CurrPlayer] += game.TokenOnCard
     game.TokenOnCard = 0
 
@@ -97,7 +95,7 @@ function getPoints(game::YesPleaseGame, idx::Int)
     if !isempty(A)
         score += A[1]
     end
-    score += sum([ (A[i] == A[i-1] + 1) ? 0 : A[i] for i in 2:length(A) ]) 
+    score += sum([ (A[i] == A[i-1] + 1) ? 0 : A[i] for i in 2:length(A) ])
     score -= game.TokensLeft[idx]
     score
 end
@@ -114,84 +112,4 @@ function gameState(game::YesPleaseGame)
     msg["current-points"] = [getPoints(game,i) for i in 1:numPlayers(game)]
 
     msg
-end
-
-
-######
-# Game Server
-######
-
-const YPCommandsList = ["start-game",
-                        "stop-game",
-                        "accept-card",
-                        "reject-card"]
-
-function YPServer(msg, currws)
-    !inRoom(currws) && return
-    querytype = msg["querytype"]
-    
-    if querytype == "start-game"
-        startnewYP(currws)
-    elseif querytype == "stop-game"
-        stopYP(currws)
-    elseif querytype == "accept-card"
-
-    elseif querytype == "reject-card"
-    
-    end
-    return
-end
-
-function startnewYP(currws)
-    roomname = getRoomfromWS[currws]
-    handle = getHandlefromWS[currws]
-    
-    if haskey(RoomGames, roomname)
-        #Ongoing Game
-        return errormsg(currws, "game-ongoing")
-    end
-    
-    playerlist = getPlayers(roomname)
-    if length(playerlist) <= 2
-        return errormsg(currws, "insufficient-players")
-    elseif length(playerlist) > 5
-        # Too many players
-        # No error for now
-    elseif !(handle in playerlist)
-        return errormsg(currws, "not-in-game-start")
-    end
-
-    RoomGames[roomname] = g = initialiseYP(playerlist)
-
-    msg = Dict{String, Any}()
-    msg["responsetype"] = "game-started"
-    msg["game-status"] = gameState(g)
-    return broadcastmsg(roomname, JSON.json(msg))
-end
-
-# Clean-up Game References
-function removeGameRef(roomname)
-    if haskey(RoomGames, roomname)
-        delete!(RoomGames, roomname)
-    end
-end
-
-inGameUsers(roomname) = RoomGames[roomname].UserList
-
-function stopYP(currws)
-    roomname = getRoomfromWS[currws]
-    handle = getHandlefromWS[currws]
-    
-    # If no games are running, end
-    (!haskey(RoomGames, roomname)) && return
-
-    if !(handle in inGameUsers(roomname))
-        # Stopping Player not currently playing
-        return errormsg(currws, "not-in-game")
-    end
-
-    removeGameRef(roomname)
-    msg = Dict{String, Any}()
-    msg["responsetype"] = "game-stopped"
-    return broadcastmsg(roomname, JSON.json(msg))
 end
