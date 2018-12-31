@@ -1,0 +1,8 @@
+name = "Game-Server"
+uuid = "72808a66-0d38-11e9-3271-41c836b7eed1"
+authors = ["Syx Pek <20557013+SyxP@users.noreply.github.com>", "Jaren Sta Maria <jarenstamaria@yahoo.com.sg>"]
+version = "0.1.0"
+
+[deps]
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+WebSockets = "104b5d7c-a370-577a-8038-80a2059c5097"
