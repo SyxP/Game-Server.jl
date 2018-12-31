@@ -5,6 +5,8 @@ using JSON
 using Sockets
 using Dates
 
+include("game-logic.jl")
+
 const LOCALIP = string(Sockets.getipaddr())
 const HTTPPORT = 8080
 
@@ -162,6 +164,7 @@ function removereferences(ws)
         if roomsize(roomname) == 0 
             # Clean-up Empty Room (Free-up Password)
             pop!(RoomPass, roomname)
+            delete!(roomGames, roomname)
         end
     end
     
@@ -187,11 +190,11 @@ function roomsuccess(currws)
     roomname = getRoomfromWS[currws]
     # Includes yourself in player list
     msg["users"] = [ getHandlefromWS[i] for i in RoomDict[roomname] ] 
-    msg["game-ongoing"] = (roomname in ongoingGames)
+    msg["game-ongoing"] = haskey(roomGames, roomname)
     msg["room-name"] = roomname
     msg["server-time"] = Dates.now()
 
-    if roomname in ongoingGames
+    if haskey(roomGames, roomname)
         # Send Game State to Player
     end
     
@@ -226,7 +229,7 @@ function playerdisconnected(listofws, handle)
     nothing
 end
 
-const ongoingGames = Set{String}()
+const roomGames = Dict{String, YesPleaseGame}()
 
 global SERVER = WebSockets.ServerWS(HTMLHandler, WSGatekeeper)
 @async WebSockets.serve(SERVER, LOCALIP, HTTPPORT)
