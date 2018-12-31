@@ -3,6 +3,7 @@ import WebSockets:Response, Request
 
 using JSON
 using Sockets
+using Dates
 
 const LOCALIP = string(Sockets.getipaddr())
 const HTTPPORT = 8080
@@ -35,7 +36,7 @@ end
 
 const WSInRoom = Set{WebSocket}()
 const RoomPass = Dict{String, String}()
-const RoomDict = Dict{String, Vector{WebSocket}}()
+const RoomDict = Dict{String, Set{WebSocket}}()
 const Usernames = Dict{String, Set{String}}()
 const getRoomfromWS = Dict{WebSocket, String}()
 const getHandlefromWS = Dict{WebSocket, String}()
@@ -98,7 +99,7 @@ function makeroom(currws, logdetails)
 	RoomPass[roomname] = roompass
 	Usernames[roomname] = Set{String}()
 	push!(Usernames[roomname], handle)
-	RoomDict[roomname] = Vector{WebSocket}()
+	RoomDict[roomname] = Set{WebSocket}()
 	push!(RoomDict[roomname], currws)
 	
 	roomsuccess(currws)
@@ -136,22 +137,22 @@ function joinroom(currws, logdetails)
 	roomsuccess(currws)
 end
 
-roomsize(roomname) = length(Username[roomname])
+roomsize(roomname) = length(Usernames[roomname])
 
 # WebSocket disconnected.
 function removereferences(ws)
-	if haskey(WSInRoom, ws)
+	if ws in WSInRoom
 		roomname = getRoomfromWS[ws] 
 		handle = getHandlefromWS[ws]
-
+		
 		pop!(WSInRoom, ws)
 		pop!(getRoomfromWS, ws)
 		pop!(getHandlefromWS, ws)
 
-		if haskey(Username[roomname], handle)
-			pop!(Username[roomname], handle)
+		if handle in Usernames[roomname]
+			pop!(Usernames[roomname], handle)
 		end
-		if haskey(RoomDict[roomname], ws)
+		if ws in RoomDict[roomname]
 			# Player Disconnected from Room
 			pop!(RoomDict[roomname], ws)
 			playerdisconnected(RoomDict[roomname], handle)
@@ -176,6 +177,7 @@ function roomsuccess(currws)
 	msg["players"] = [ getHandlefromWS[i] for i in RoomDict[roomname] ] 
 	msg["game-ongoing"] = (roomname in ongoingGames)
 	msg["room-name"] = roomname
+	msg["server-time"] = Dates.now()
 
 	if roomname in ongoingGames
 		# Send Game State to Player
@@ -192,7 +194,8 @@ function playerjoined(listofws, handle)
 	msg = Dict{String, Any}()
 	msg["responsetype"] = "player-joined"
 	msg["player"] = handle
-	
+	msg["server-time"] = Dates.now()	
+
 	for ws in listofws
 		(getHandlefromWS[ws] != handle) && writeguarded(ws, JSON.json(msg))	
 	end
@@ -203,6 +206,7 @@ function playerdisconnected(listofws, handle)
 	msg = Dict{String, Any}()
 	msg["responsetype"] = "player-disconnected"
 	msg["player"] = handle
+	msg["server-time"] = Dates.now()
 	
 	for ws in listofws
 		(getHandlefromWS[ws] != handle) && writeguarded(ws, JSON.json(msg))
