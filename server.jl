@@ -25,11 +25,10 @@ end
 function WSGatekeeper(req, ws)
     orig = WebSockets.origin(req)
     if occursin(LOCALIP, orig)
-        #Run Main Coroutine
+        # Run Main Coroutine
         coroutine(ws)
     else
-        @warn("Unauthorized websocket connection, $orig not approved by gatekee
-per, expected $LOCALIP")
+        @warn("Unauthorized websocket connection, $orig not approved by gatekeeper, expected $LOCALIP")
     end
     nothing
 end
@@ -55,6 +54,8 @@ function coroutine(currws)
         elseif msg["querytype"] == "make-room"
             !validJSON(msg, "particulars") && break
             makeroom(currws, msg["particulars"])
+        elseif msg["querytype"] == "leave-room"
+            leaveroom(currws)
         end
     end
     
@@ -164,6 +165,17 @@ function removereferences(ws)
         end
     end
     
+    nothing
+end
+
+function leaveroom(currws)
+    removereferences(currws)
+    msg = Dict{String, Any}()
+    msg["responsetype"] = "left-room"
+    msg["server-time"] = Dates.now()
+
+    writeguarded(ws, JSON.json(msg))
+
     nothing
 end
 
