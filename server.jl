@@ -33,6 +33,7 @@ per, expected $LOCALIP")
 	nothing
 end
 
+const WSInRoom = Set{WebSocket}()
 const RoomPass = Dict{String, String}()
 const RoomDict = Dict{String, Vector{WebSocket}}()
 const Usernames = Dict{String, Set{String}}()
@@ -81,21 +82,25 @@ function makeroom(currws, logdetails)
 	roomname = logdetails["roomname"]
 	roompass = logdetails["roompass"]
 
-	if haskey(RoomPass, roomname)
+	if currws in WSInRoom
+		# WebSocket already in Room
+		return
+	elseif haskey(RoomPass, roomname)
 		# Room Already Exists
 		writeguarded(currws, "{ \"responsetype\" : \"room-exists-error\" }")
 		return
 	end
 	
+	push!(WSInRoom, currws)
 	getRoomfromWS[currws] = roomname
 	getHandlefromWS[currws] = handle
-
+	
 	RoomPass[roomname] = roompass
 	Usernames[roomname] = Set{String}()
 	push!(Usernames[roomname], handle)
 	RoomDict[roomname] = Vector{WebSocket}()
 	push!(RoomDict[roomname], currws)
-
+	
 	roomsuccess(currws)
 end
 
@@ -104,8 +109,11 @@ function joinroom(currws, logdetails)
         handle = logdetails["handle"]
         roomname = logdetails["roomname"]
         roompass = logdetails["roompass"]
-
-	if !haskey(RoomPass, roomname)
+	
+	if currws in WSInRoom
+		# WebSocket already in Room
+		return
+	elseif !haskey(RoomPass, roomname)
 		# Room Doesn't Exist
 		writeguarded(currws, "{ \"responsetype\" : \"room-missing-error\" }")
 		return
@@ -113,24 +121,30 @@ function joinroom(currws, logdetails)
 		# Wrong Password
 		writeguarded(currws, "{ \"responsetype\" : \"wrong-password-error\" }")
 		return
+	elseif handle in Usernames[roomname]
+		# Duplicated Username
+		writeguarded(currws, "{ \"responsetype\" : \"duplicate-username-error\" }")
+		return
 	end
-
+	
+	push!(WSInRoom, currws)
 	getRoomfromWS[currws] = roomname
 	getHandlefromWS[currws] = handle
 
 	push!(Usernames[roomname], handle)
 	push!(RoomDict[roomname], currws)
-
 	roomsuccess(currws)
 end
 
 roomsize(roomname) = length(Username[roomname])
 
+# WebSocket disconnected.
 function removereferences(ws)
-	if haskey(getRoomfromWS, ws)
+	if haskey(WSInRoom, ws)
 		roomname = getRoomfromWS[ws] 
 		handle = getHandlefromWS[ws]
 
+		pop!(WSInRoom, ws)
 		pop!(getRoomfromWS, ws)
 		pop!(getHandlefromWS, ws)
 
@@ -138,10 +152,13 @@ function removereferences(ws)
 			pop!(Username[roomname], handle)
 		end
 		if haskey(RoomDict[roomname], ws)
+			# Player Disconnected from Room
 			pop!(RoomDict[roomname], ws)
+			playerdisconnected(RoomDict[roomname], handle)
 		end
 
 		if roomsize(roomname) == 0 
+			# Clean-up Empty Room (Free-up Password)
 			pop!(RoomPass, roomname)
 		end
 	end
@@ -150,7 +167,50 @@ function removereferences(ws)
 end
 
 function roomsuccess(currws)
+	# Send join-room
+	msg = Dict{String, Any}()
+	msg["responsetype"] = "joined-room"
+	
+	roomname = getRoomfromWS[currws]
+	# Includes yourself in player list
+	msg["players"] = [ getHandlefromWS[i] for i in RoomDict[roomname] ] 
+	msg["game-ongoing"] = (roomname in ongoingGames)
+	msg["room-name"] = roomname
+
+	if roomname in ongoingGames
+		# Send Game State to Player
+	end
+	
+	writeguarded(currws, JSON.json(msg))
+	
+	# Send the rest of players a player-join message
+	playerjoined(RoomDict[roomname], getHandlefromWS[currws])
+	nothing
 end
+
+function playerjoined(listofws, handle)
+	msg = Dict{String, Any}()
+	msg["responsetype"] = "player-joined"
+	msg["player"] = handle
+	
+	for ws in listofws
+		(getHandlefromWS[ws] != handle) && writeguarded(ws, JSON.json(msg))	
+	end
+	nothing
+end
+
+function playerdisconnected(listofws, handle)
+	msg = Dict{String, Any}()
+	msg["responsetype"] = "player-disconnected"
+	msg["player"] = handle
+	
+	for ws in listofws
+		(getHandlefromWS[ws] != handle) && writeguarded(ws, JSON.json(msg))
+	end
+	nothing
+end
+
+const ongoingGames = Set{String}()
 
 global SERVER = WebSockets.ServerWS(HTMLHandler, WSGatekeeper)
 @async WebSockets.serve(SERVER, LOCALIP, HTTPPORT)
