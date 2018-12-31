@@ -6,6 +6,7 @@
         <title>Yes Please!</title>
         <link rel="stylesheet" type="text/css" href="style.css">
         <link href="https://fonts.googleapis.com/css?family=Changa:300" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet">
     </head>
     <body>
         <div id="server-status" class="above">
@@ -19,12 +20,12 @@
             <h1>Yes, Please!</h1>
             <div class="join-input">
                 <label for="join-handle">Handle:</label>
-                <input id ="join-handle" type="text" maxlength="10">
+                <input id ="join-handle" type="text" maxlength="16">
             </div>
 
             <div class="join-input">
                 <label for="join-room">Room:</label>
-                <input id ="join-room" type="text" maxlength="10">
+                <input id ="join-room" type="text" maxlength="16">
             </div>
             <div class="join-input">
                 <label for="join-pass">Password:</label>
@@ -34,6 +35,18 @@
             <button id="join-enter">Enter Room</button>
             <button id="join-create">Create Room</button>
         </div>
+        
+        <div id="room-panel" style="display: none;">
+            <h1 id="room-title">Yes,&nbsp;Please! Room:&nbsp;</h1>
+            <div id="room-board">
+                
+            </div>
+            <div class="room-side">
+                <h3>Users</h3>
+                <ul id="room-players"></ul>
+            </div>
+        </div>
+        
         <script src="script.js"> </script>
     </body>
 </html>

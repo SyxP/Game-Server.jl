@@ -69,8 +69,24 @@ comms.receiveMessage = function(msgData) {
             login.setErrorStatus("Username has already been chosen.");
             break;
         case "joined-room":
+            room.userList = msg["users"].sort();
+            room.setTitle(msg["room-name"]);
+            room.setPlayers(room.userList);
+            room.inProgress = msg["game-ongoing"];
+            if (room.inProgress)
+                room.gameState = msg["game-status"];
+            room.updateDisplay();
             login.show(false);
             room.show(true);
+            break;
+        case "player-joined":
+            room.userList.push(msg["user"]);
+            room.userList.sort();
+            room.setPlayers(room.userList);
+            break;
+        case "player-disconnected":
+            room.userList = room.userList.filter(x => x !== msg["user"]);
+            room.setPlayers(room.userList);
             break;
     }
 };
@@ -97,6 +113,7 @@ login.passwordField = document.getElementById("join-pass");
 login.joinRoomBtn = document.getElementById("join-enter");
 login.errorMessage = document.getElementById("error-message");
 login.joinRoomBtn.onclick = function() {
+    room.myHandle = login.handleField.value;
     let content = {
         "querytype":   "join-room",
         "particulars": login.getParticulars()
@@ -105,6 +122,7 @@ login.joinRoomBtn.onclick = function() {
 };
 login.makeRoomBtn = document.getElementById("join-create");
 login.makeRoomBtn.onclick = function() {
+    room.myHandle = login.handleField.value;
     let content = {
         "querytype":   "make-room",
         "particulars": login.getParticulars()
@@ -126,6 +144,41 @@ login.setErrorStatus = function(msg) {
 
 login.show = function(show) {
     login.window.style.display = show ? "block" : "none";
+};
+
+room.userList = [];
+room.window = document.getElementById("room-panel");
+room.title = document.getElementById("room-title");
+room.userDisplay = document.getElementById("room-players");
+room.board = document.getElementById("room-board");
+
+room.setTitle = function(str) {
+    room.title.innerHTML = "Yes, Please!<br>Room: " + str;
+};
+
+room.setPlayers = function(lst) {
+    while (room.userDisplay.firstChild)
+        room.userDisplay.removeChild(room.userDisplay.firstChild);
+    for (let p of lst) {
+        let li = document.createElement("li");
+        if (p === room.myHandle)
+            li.setAttribute("id", "user-me");
+        li.innerHTML = p;
+        room.userDisplay.appendChild(li);
+    }
+};
+
+room.updateDisplay = function() {
+    if (room.inProgress) {
+        
+    }
+    else {
+        
+    }
+};
+
+room.show = function(show) {
+    room.window.style.display = show ? "block" : "none";
 };
 
 window.onload = comms.load;

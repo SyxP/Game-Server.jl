@@ -116,7 +116,7 @@ body {
 }
 
 #login-panel #join-create:hover {
-    background: #11779F
+    background: #11779F;
 }
 
 button {
@@ -124,4 +124,44 @@ button {
     font-family: 'Changa', sans-serif;
     border-radius: 3px !important;
     border-style: solid;
+}
+
+#room-panel {
+    position: absolute;
+    width: 600px;
+    background: #F8FDFF;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 10px;
+}
+
+#room-board {
+    float: left;
+    width: 400px;
+    height: 800px;
+    padding: 20px;
+}
+
+.room-side {
+}
+
+#room-title {
+    color: #323032;
+    font-size: 32px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+#room-players {
+    font-family: 'Ubuntu Mono';
+    font-weight: bold;
+    font-size: 16px;
+    list-style-type: circle;
+}
+
+#user-me {
+    color: #008000;
+    list-style-type: disc;
 }
