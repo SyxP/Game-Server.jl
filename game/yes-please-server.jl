@@ -46,13 +46,6 @@ function startnewYP(currws)
     return broadcastmsg(roomname, JSON.json(msg))
 end
 
-# Clean-up Game References
-function removeGameRef(roomname)
-    if haskey(RoomGames, roomname)
-        delete!(RoomGames, roomname)
-    end
-end
-
 # Overloaded required method
 inGameUsers(g::YesPleaseGame) = g.UserList
 
@@ -69,7 +62,5 @@ function stopYP(currws)
     end
 
     removeGameRef(roomname)
-    msg = Dict{String, Any}()
-    msg["responsetype"] = "game-stopped"
-    return broadcastmsg(roomname, JSON.json(msg))
+    return
 end

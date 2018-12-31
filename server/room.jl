@@ -4,7 +4,6 @@ const RoomDict = Dict{String, Set{WebSocket}}()
 const Usernames = Dict{String, Set{String}}()
 const getRoomfromWS = Dict{WebSocket, String}()
 const getHandlefromWS = Dict{WebSocket, String}()
-const RoomGames = Dict{String, Game}()
 
 function makeroom(currws, logdetails)
     !validJSON(logdetails, ["handle", "roomname", "roompass"]) && return
@@ -96,6 +95,8 @@ function removereferences(ws)
             delete!(RoomGames, roomname)
             delete!(SpecDict, roomname)
         end
+
+        dcplayerleft(handle, roomname)
     end
 
     nothing
@@ -118,6 +119,8 @@ function roomsuccess(currws)
     msg["responsetype"] = "joined-room"
 
     roomname = getRoomfromWS[currws]
+    handle = getHandlefromWS[currws]
+    
     # Includes yourself in player list
     msg["users"] = getUsers(roomname)
     msg["game-ongoing"] = haskey(RoomGames, roomname)
@@ -129,6 +132,7 @@ function roomsuccess(currws)
         msg["game-status"] = gameState(RoomGames[roomname])
     end
 
+    dcplayerjoined(handle, roomname)
     writeguarded(currws, JSON.json(msg))
 
     # Send the rest of players a player-join message

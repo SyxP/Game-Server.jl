@@ -14,6 +14,7 @@ include("server/output.jl")
 include("server/spectation.jl")
 include("server/room.jl")
 include("server/utils.jl")
+include("server/disconnection.jl")
 
 const LOCALIP = string(Sockets.getipaddr())
 const HTTPPORT = 8080
