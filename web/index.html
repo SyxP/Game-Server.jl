@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta charset="UTF-8">
-		<title>Yes Please!</title>
-		<link rel="stylesheet" type="text/css" href="style.css">
-		<link href="https://fonts.googleapis.com/css?family=Changa:300" rel="stylesheet">
-	</head>
-	<body>
-		<div id="server-status" class="above">
-			<h3 id="server-message"> </h3>
-			<button id="server-status-clear"> Okay </button>
-		</div>
-		
-		<div id="overlay" style="display: none;"> </div>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+        <title>Yes Please!</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link href="https://fonts.googleapis.com/css?family=Changa:300" rel="stylesheet">
+    </head>
+    <body>
+        <div id="server-status" class="above">
+            <h3 id="server-message"> </h3>
+            <button id="server-status-clear"> Okay </button>
+        </div>
+        
+        <div id="overlay" style="display: none;"> </div>
 
-		<div id="login-panel">
-			<h1>Yes, Please!</h1>
-			<div class="join-input">
-				<label for="join-handle">Handle:</label>
-				<input id ="join-handle" type="text" maxlength="10">
-			</div>
+        <div id="login-panel">
+            <h1>Yes, Please!</h1>
+            <div class="join-input">
+                <label for="join-handle">Handle:</label>
+                <input id ="join-handle" type="text" maxlength="10">
+            </div>
 
-			<div class="join-input">
-				<label for="join-room">Room:</label>
-				<input id ="join-room" type="text" maxlength="10">
-			</div>
-			<div class="join-input">
-				<label for="join-pass">Password:</label>
-				<input id ="join-pass" type="password" maxlength="20">
-			</div>
-			<p id="error-message"></p>
-			<button id="join-enter">Enter Room</button>
-			<button id="join-create">Create Room</button>
-		</div>
-		<script src="script.js"> </script>
-	</body>
+            <div class="join-input">
+                <label for="join-room">Room:</label>
+                <input id ="join-room" type="text" maxlength="10">
+            </div>
+            <div class="join-input">
+                <label for="join-pass">Password:</label>
+                <input id ="join-pass" type="password" maxlength="20">
+            </div>
+            <p id="error-message"></p>
+            <button id="join-enter">Enter Room</button>
+            <button id="join-create">Create Room</button>
+        </div>
+        <script src="script.js"> </script>
+    </body>
 </html>
