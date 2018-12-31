@@ -162,7 +162,7 @@ room.setPlayers = function(lst) {
     for (let p of lst) {
         let li = document.createElement("li");
         if (p === room.myHandle)
-            li.setAttribute("id", "user-me");
+            li.setAttribute("class", "user-me");
         li.innerHTML = p;
         room.userDisplay.appendChild(li);
     }
@@ -178,7 +178,7 @@ room.updateDisplay = function() {
 };
 
 room.show = function(show) {
-    room.window.style.display = show ? "block" : "none";
+    room.window.style.display = show ? "flex" : "none";
 };
 
 window.onload = comms.load;
