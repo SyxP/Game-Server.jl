@@ -41,6 +41,8 @@ const RoomDict = Dict{String, Set{WebSocket}}()
 const Usernames = Dict{String, Set{String}}()
 const getRoomfromWS = Dict{WebSocket, String}()
 const getHandlefromWS = Dict{WebSocket, String}()
+const SpecDict = Dict{String, Set{String}}()
+const RoomGames = Dict{String, YesPleaseGame}()
 
 function coroutine(currws)
     while isopen(currws)
@@ -58,12 +60,28 @@ function coroutine(currws)
             makeroom(currws, msg["particulars"])
         elseif msg["querytype"] == "leave-room"
             leaveroom(currws)
+        elseif msg["querytype"] == "change-state-spectate"
+            changestatespec(currws)
+        elseif msg["querytype"] == "change-state-play"
+            changestateplay(currws)
+        elseif msg["querytype"] in YPCommandsList
+            YPServer(msg, currws)
         end
     end
     
     # Clean up External References
     removereferences(currws)
     nothing
+end
+
+# Returns true when currws in a room
+function inRoom(currws)
+    if !haskey(getRoomfromWS, currws)
+        println("Invalid Game Command occured outside Room")
+        errormsg(currws, "not-in-room")
+        return false
+    end
+    return true
 end
 
 # Returns true when JSON has all the fields
@@ -91,7 +109,7 @@ function makeroom(currws, logdetails)
         return
     elseif haskey(RoomPass, roomname)
         # Room Already Exists
-        writeguarded(currws, "{ \"responsetype\" : \"room-exists-error\" }")
+        errormsg(currws, "room-exists") 
         return
     end
     
@@ -108,6 +126,8 @@ function makeroom(currws, logdetails)
     roomsuccess(currws)
 end
 
+validName(handle) = !(strip(handle) == "")
+
 function joinroom(currws, logdetails)
     !validJSON(logdetails, ["handle", "roomname", "roompass"]) && return
         handle = logdetails["handle"]
@@ -117,18 +137,21 @@ function joinroom(currws, logdetails)
     if currws in WSInRoom
         # WebSocket already in Room
         return
+    elseif !validName(handle)
+        # Whitespace only Handle
+        return errormsg(currws, "invalid-handle") 
+    elseif !validName(roomname)
+        # Whitespace only Name
+        return errormsg(currws, "invalid-roomname")
     elseif !haskey(RoomPass, roomname)
         # Room Doesn't Exist
-        writeguarded(currws, "{ \"responsetype\" : \"room-missing-error\" }")
-        return
+        return errormsg(currws, "room-missing")
     elseif RoomPass[roomname] != roompass
         # Wrong Password
-        writeguarded(currws, "{ \"responsetype\" : \"wrong-password-error\" }")
-        return
+        return errormsg(currws, "wrong-password")
     elseif handle in Usernames[roomname]
         # Duplicated Username
-        writeguarded(currws, "{ \"responsetype\" : \"duplicate-username-error\" }")
-        return
+        return errormsg(currws, "duplicate-username")
     end
     
     push!(WSInRoom, currws)
@@ -164,7 +187,8 @@ function removereferences(ws)
         if roomsize(roomname) == 0 
             # Clean-up Empty Room (Free-up Password)
             pop!(RoomPass, roomname)
-            delete!(roomGames, roomname)
+            delete!(RoomGames, roomname)
+            delete!(SpecDict, roomname)
         end
     end
     
@@ -189,13 +213,14 @@ function roomsuccess(currws)
     
     roomname = getRoomfromWS[currws]
     # Includes yourself in player list
-    msg["users"] = [ getHandlefromWS[i] for i in RoomDict[roomname] ] 
-    msg["game-ongoing"] = haskey(roomGames, roomname)
+    msg["users"] = getUsers(roomname)
+    msg["game-ongoing"] = haskey(RoomGames, roomname)
     msg["room-name"] = roomname
     msg["server-time"] = Dates.now()
-
-    if haskey(roomGames, roomname)
+    msg["spectation-list"] = getSpectators(roomname)
+    if haskey(RoomGames, roomname)
         # Send Game State to Player
+        msg["game-status"] = gameState(RoomGames[roomname])
     end
     
     writeguarded(currws, JSON.json(msg))
@@ -210,11 +235,8 @@ function playerjoined(listofws, handle)
     msg["responsetype"] = "player-joined"
     msg["user"] = handle
     msg["server-time"] = Dates.now()    
-
-    for ws in listofws
-        (getHandlefromWS[ws] != handle) && writeguarded(ws, JSON.json(msg)) 
-    end
-    nothing
+    return broadcastmsg(listofws, JSON.json(msg),
+                        cond = x -> (getHandlefromWS[x] != handle))
 end
 
 function playerdisconnected(listofws, handle)
@@ -223,13 +245,82 @@ function playerdisconnected(listofws, handle)
     msg["user"] = handle
     msg["server-time"] = Dates.now()
     
+    return broadcastmsg(listofws, JSON.json(msg), 
+                        cond = x -> (getHandlefromWS[x] != handle))
+end
+
+function broadcastmsg(roomname::String, msg)
+    if !haskey(RoomDict, roomname)
+        #Shouldn't Happen
+        @warn("Called broadcastmsg with non-existent $(roomname) with $(msg)")
+        return
+    end
+    return broadcastmsg(RoomDict[roomname], msg)
+end
+
+function broadcastmsg(listofws::Set{WebSocket}, msg; 
+                      cond = x -> true) 
     for ws in listofws
-        (getHandlefromWS[ws] != handle) && writeguarded(ws, JSON.json(msg))
+        if cond(ws)
+            writeguarded(ws, msg)
+        end
     end
     nothing
 end
 
-const roomGames = Dict{String, YesPleaseGame}()
+function errormsg(ws, errortype)
+    writeguarded(ws, "{ \"responsetype\" : \"$(errortype)-error\" }")
+    nothing
+end
+
+function changestatespec(currws)
+    !inRoom(currws) && return
+    roomname = getRoomfromWS[currws]
+    handle = getHandlefromWS[currws]
+
+    if !haskey(SpecDict, roomname)
+        SpecDict[roomname] = Set{String}()
+    end
+    push!(SpecDict[roomname], handle)
+    
+    msg = Dict{String, Any}
+    msg["responsetype"] = "change-status-spectate"
+    msg["handle"] = handle
+    broadcastmsg(roomname, JSON.json(msg))
+
+    nothing
+end
+
+function changestateplay(currws)
+    !inRoom(currws) && return
+    roomname = getRoomfromWS[currws]
+    handle = getHandlefromWS[currws]
+
+    if haskey(SpecDict, roomname) && haskey(SpecDict[roomname], handle)
+        pop!(SpecDict[roomname], handle)
+        
+        msg = Dict{String, Any}
+        msg["responsetype"] = "change-status-play"
+        msg["handle"] = handle
+        broadcastmsg(roomname, JSON.json(msg))
+    end
+
+    nothing
+end
+
+function getSpectators(roomname)
+    (!haskey(SpecDict, roomname)) && return []
+    return collect(SpecDict[roomname])
+end
+
+function getUsers(roomname)
+    return [ getHandlefromWS[i] for i in RoomDict[roomname] ]
+end
+
+function getPlayers(roomname)
+    (!haskey(SpecDict, roomname)) && return getUsers(roomname)
+    return filter(x -> !(x in SpecDict), getUsers(roomname))
+end
 
 global SERVER = WebSockets.ServerWS(HTMLHandler, WSGatekeeper)
 @async WebSockets.serve(SERVER, LOCALIP, HTTPPORT)
