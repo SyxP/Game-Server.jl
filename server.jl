@@ -186,7 +186,7 @@ function roomsuccess(currws)
     
     roomname = getRoomfromWS[currws]
     # Includes yourself in player list
-    msg["players"] = [ getHandlefromWS[i] for i in RoomDict[roomname] ] 
+    msg["users"] = [ getHandlefromWS[i] for i in RoomDict[roomname] ] 
     msg["game-ongoing"] = (roomname in ongoingGames)
     msg["room-name"] = roomname
     msg["server-time"] = Dates.now()
@@ -205,7 +205,7 @@ end
 function playerjoined(listofws, handle)
     msg = Dict{String, Any}()
     msg["responsetype"] = "player-joined"
-    msg["player"] = handle
+    msg["user"] = handle
     msg["server-time"] = Dates.now()    
 
     for ws in listofws
@@ -217,7 +217,7 @@ end
 function playerdisconnected(listofws, handle)
     msg = Dict{String, Any}()
     msg["responsetype"] = "player-disconnected"
-    msg["player"] = handle
+    msg["user"] = handle
     msg["server-time"] = Dates.now()
     
     for ws in listofws
