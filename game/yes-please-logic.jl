@@ -104,12 +104,16 @@ function gameState(game::YesPleaseGame)
     msg = Dict{String, Any}()
     msg["player-list"] = game.UserList
     msg["num-cards-left"] = cardsLeft(game)
-    msg["top-card"] = topCard(game)
+    msg["game-ended"] = gameEnded(game)
     msg["token-on-card"] = game.TokenOnCard
     msg["tokens-left"] = game.TokensLeft
     msg["curr-player"] = game.CurrPlayer
     msg["cards-taken"] = game.CardsTaken
     msg["current-points"] = [getPoints(game,i) for i in 1:numPlayers(game)]
+
+    if !gameEnded(game)
+        msg["top-card"] = topCard(game)
+    end
 
     msg
 end

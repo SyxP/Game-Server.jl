@@ -12,9 +12,9 @@ function YPServer(msg, currws)
     elseif querytype == "stop-game"
         stopYP(currws)
     elseif querytype == "accept-card"
-
+        acceptCard(currws)
     elseif querytype == "reject-card"
-    
+        rejectCard(currws)
     end
     return
 end
@@ -55,12 +55,48 @@ function stopYP(currws)
     
     # If no games are running, end
     (!haskey(RoomGames, roomname)) && return
-
-    if !(handle in inGameUsers(RoomGames[roomname]))
-        # Stopping Player not currently playing
-        return errormsg(currws, "not-in-game")
-    end
+    # Stopping Player not currently playing
+    !(handle in inGameUsers(RoomGames[roomname])) && return errormsg(currws, "not-in-game")
 
     removeGameRef(roomname)
     return
+end
+
+function acceptCard(currws::WebSocket)
+    roomname = getRoomfromWS(currws)
+    handle = getHandlefromWS(currws)
+    g = RoomGames[roomname]
+    # Player not currently playing
+    !(handle in inGameUsers(g)) && return errormsg(currws, "not-in-game")
+    
+    exitcode = acceptCard(g, handle)
+    if exitcode == "game-ended"
+        return errormsg(currws, "game-ended")
+    elseif exitcode == "wrong-player"
+        return errormsg(currws, "wrong-player")
+    elseif exitcode == "success"
+        broadcastmsg(roomname, "{ \"responsetype\" : \"card-accepted\" }")
+    end
+
+    return
+end
+
+function rejectCard(currws::WebSocket)
+    roomname = getRoomfromWS(currws)
+    handle = getHandlefromWS(currws)
+    g = RoomGames[roomname]
+    # Player not currently playing
+    !(handle in inGameUsers(g)) && return errormsg(currws, "not-in-game")
+
+    exitcode = rejectCard(g, handle)
+    if exitcode == "game-ended"
+        return errormsg(currws, "game-ended")
+    elseif exitcode == "wrong-player"
+        return errormsg(currws, "wrong-player")
+    elseif exitcode == "insufficient-tokens"
+        return errormsg(currws, "insufficient-tokens")
+    elseif exitcode == "success"
+        broadcastmsg(roomname, "{ \"responsetype\" : \"card-rejected\" }")
+    end
+
 end
