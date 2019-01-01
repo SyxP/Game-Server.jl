@@ -73,8 +73,9 @@ comms.receiveMessage = function(msgData) {
             break;
         case "joined-room":
             room.userList = msg["users"].sort();
+            room.spectatorList = msg["spectation-list"].sort();
             room.setTitle(msg["room-name"]);
-            room.setPlayers(room.userList);
+            room.updatePlayers();
             room.inProgress = msg["game-ongoing"];
             if (room.inProgress)
                 room.gameState = msg["game-status"];
@@ -87,11 +88,11 @@ comms.receiveMessage = function(msgData) {
         case "player-joined":
             room.userList.push(msg["user"]);
             room.userList.sort();
-            room.setPlayers(room.userList);
+            room.updatePlayers();
             break;
         case "player-disconnected":
             room.userList = room.userList.filter(x => x !== msg["user"]);
-            room.setPlayers(room.userList);
+            room.updatePlayers();
             break;
     }
 };

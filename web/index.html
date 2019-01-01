@@ -42,13 +42,19 @@
         
         <div id="room-panel" style="display: none;">
             <h1 id="room-title"></h1>
-            <div style="flex: 1;">
+            <div style="flex: 1 1; min-height: 0px;">
                 <div id="room-board">
                     
                 </div>
-                <div class="room-side">
+                <div id="room-side">
                     <h3>Users</h3>
-                    <ul id="room-players"></ul>
+                    <ul id="room-side-legend">
+                        <li class="user-player">Player</li>
+                        <li class="user-spectator">Spectator</li>
+                    </ul>
+                    <div id="room-players-container">
+                        <ul id="room-players"></ul>
+                    </div>
                 </div>
             </div>
         </div>

@@ -43,19 +43,6 @@ body {
     background: #11779F;
 }
 
-.anim-blinkerror {
-    animation-duration: 250ms;
-    animation-timing-function: step-start;
-    animation-iteration-count: 3;
-    animation-name: blinkerror;
-}
-
-@keyframes blinkerror {
-    50% {
-        border-color: #FF0000;
-    }
-}
-
 #overlay {
     position: fixed;
     display: none;
@@ -129,6 +116,19 @@ body {
     background: #11779F;
 }
 
+@keyframes blinkerror {
+    50% {
+        border-color: #FF0000;
+    }
+}
+
+#login-panel .anim-blinkerror {
+    animation-duration: 250ms;
+    animation-timing-function: step-start;
+    animation-iteration-count: 3;
+    animation-name: blinkerror;
+}
+
 button {
     cursor: pointer;
     font-family: 'Changa', sans-serif;
@@ -140,27 +140,41 @@ button {
     position: absolute;
     width: 80%;
     height: 70%;
+    min-width: 600px;
+    min-height: 300px;
     background: #F8FDFF;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 10px;
     display: flex;
-    flex-flow: column;
+    flex-flow: column nowrap;
 }
 
-#room-board {
+#room-panel #room-board {
     float: left;
     width: calc(80% - 40px);
     height: calc(100% - 40px);
     padding: 20px;
 }
 
-.room-side {
+#room-panel #room-side {
     height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
 }
 
-#room-title {
+#room-panel #room-side h3 {
+    margin: 0;
+    padding: 0;
+}
+
+#room-panel #room-side-legend {
+    margin: 0;
+    padding: 0;
+}
+
+#room-panel #room-title {
     color: #323032;
     font-size: 32px;
     margin: 0;
@@ -168,16 +182,32 @@ button {
     text-align: center;
 }
 
-#room-players {
+#room-panel #room-players-container {
+    overflow: auto;
+    margin: 10px;
+    margin-left: 0;
+    flex: 1;
+}
+
+#room-panel #room-players {
+    height: 100%;
     font-family: 'Ubuntu Mono';
     font-weight: bold;
     font-size: 16px;
     list-style-type: circle;
-    overflow-x: auto;
-    overflow-y: auto;
+    overflow: auto;
+    padding-left: 1em;
+    margin: 0;
 }
 
-.user-me {
+#room-panel .user-player {
+    list-style-type: "\25B8";
+}
+
+#room-panel .user-spectator {
+    list-style-type: "\25B9";
+}
+
+#room-panel .user-me {
     color: #008000;
-    list-style-type: disc;
 }
