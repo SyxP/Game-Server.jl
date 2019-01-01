@@ -2,7 +2,7 @@
 function inRoom(currws)
     if !haskey(getRoomfromWS, currws)
         println("Invalid Game Command occured outside Room")
-        errormsg(currws, "not-in-room")
+        errormsg(currws, "room-not-in-room")
         return false
     end
     return true

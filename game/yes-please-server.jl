@@ -25,23 +25,23 @@ function startnewYP(currws)
     
     if haskey(RoomGames, roomname)
         #Ongoing Game
-        return errormsg(currws, "game-ongoing")
+        return errormsg(currws, "room-game-ongoing")
     end
     
     playerlist = getPlayers(roomname)
     if length(playerlist) <= 2
-        return errormsg(currws, "insufficient-players")
+        return errormsg(currws, "room-insufficient-players")
     elseif length(playerlist) > 5
         # Too many players
         # No error for now
     elseif !(handle in playerlist)
-        return errormsg(currws, "not-in-game-start")
+        return errormsg(currws, "room-not-in-game-start")
     end
 
     RoomGames[roomname] = g = initialiseYP(playerlist)
 
     msg = Dict{String, Any}()
-    msg["responsetype"] = "game-started"
+    msg["responsetype"] = "game-game-started"
     msg["game-status"] = gameState(g)
     return broadcastmsg(roomname, JSON.json(msg))
 end
@@ -56,7 +56,7 @@ function stopYP(currws)
     # If no games are running, end
     (!haskey(RoomGames, roomname)) && return
     # Stopping Player not currently playing
-    !(handle in inGameUsers(RoomGames[roomname])) && return errormsg(currws, "not-in-game")
+    !(handle in inGameUsers(RoomGames[roomname])) && return errormsg(currws, "room-not-in-game")
 
     removeGameRef(roomname)
     return
@@ -67,18 +67,16 @@ function acceptCard(currws::WebSocket)
     handle = getHandlefromWS(currws)
     g = RoomGames[roomname]
     # Player not currently playing
-    !(handle in inGameUsers(g)) && return errormsg(currws, "not-in-game")
+    !(handle in inGameUsers(g)) && return errormsg(currws, "room-not-in-game")
     
     exitcode = acceptCard(g, handle)
     if exitcode == "game-ended"
         return errormsg(currws, "game-ended")
     elseif exitcode == "wrong-player"
-        return errormsg(currws, "wrong-player")
+        return errormsg(currws, "game-wrong-player")
     elseif exitcode == "success"
-        broadcastmsg(roomname, "{ \"responsetype\" : \"card-accepted\" }")
+        return broadcastmsg(roomname, "{ \"responsetype\" : \"game-card-accepted\" }")
     end
-
-    return
 end
 
 function rejectCard(currws::WebSocket)
@@ -86,17 +84,16 @@ function rejectCard(currws::WebSocket)
     handle = getHandlefromWS(currws)
     g = RoomGames[roomname]
     # Player not currently playing
-    !(handle in inGameUsers(g)) && return errormsg(currws, "not-in-game")
+    !(handle in inGameUsers(g)) && return errormsg(currws, "room-not-in-game")
 
     exitcode = rejectCard(g, handle)
     if exitcode == "game-ended"
         return errormsg(currws, "game-ended")
     elseif exitcode == "wrong-player"
-        return errormsg(currws, "wrong-player")
+        return errormsg(currws, "game-wrong-player")
     elseif exitcode == "insufficient-tokens"
-        return errormsg(currws, "insufficient-tokens")
+        return errormsg(currws, "game-insufficient-tokens")
     elseif exitcode == "success"
-        broadcastmsg(roomname, "{ \"responsetype\" : \"card-rejected\" }")
+        return broadcastmsg(roomname, "{ \"responsetype\" : \"game-card-rejected\" }")
     end
-
 end

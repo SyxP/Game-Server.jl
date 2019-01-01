@@ -11,7 +11,7 @@ function changestatespec(currws)
     push!(SpecDict[roomname], handle)
 
     msg = Dict{String, Any}
-    msg["responsetype"] = "change-status-spectate"
+    msg["responsetype"] = "room-change-status-spectate"
     msg["handle"] = handle
     broadcastmsg(roomname, JSON.json(msg))
 
@@ -27,7 +27,7 @@ function changestateplay(currws)
         pop!(SpecDict[roomname], handle)
 
         msg = Dict{String, Any}
-        msg["responsetype"] = "change-status-play"
+        msg["responsetype"] = "room-change-status-play"
         msg["handle"] = handle
         broadcastmsg(roomname, JSON.json(msg))
     end

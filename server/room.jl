@@ -14,9 +14,15 @@ function makeroom(currws, logdetails)
     if currws in WSInRoom
         # WebSocket already in Room
         return
+    elseif !validName(handle)
+        # Whitespace only Handle
+        return errormsg(currws, "login-invalid-handle")
+    elseif !validName(roomname)
+        # Whitespace only Name
+        return errormsg(currws, "login-invalid-roomname")
     elseif haskey(RoomPass, roomname)
         # Room Already Exists
-        errormsg(currws, "room-exists")
+        errormsg(currws, "login-room-exists")
         return
     end
 
@@ -44,19 +50,19 @@ function joinroom(currws, logdetails)
         return
     elseif !validName(handle)
         # Whitespace only Handle
-        return errormsg(currws, "invalid-handle")
+        return errormsg(currws, "login-invalid-handle")
     elseif !validName(roomname)
         # Whitespace only Name
-        return errormsg(currws, "invalid-roomname")
+        return errormsg(currws, "login-invalid-roomname")
     elseif !haskey(RoomPass, roomname)
         # Room Doesn't Exist
-        return errormsg(currws, "room-missing")
+        return errormsg(currws, "login-room-missing")
     elseif RoomPass[roomname] != roompass
         # Wrong Password
-        return errormsg(currws, "wrong-password")
+        return errormsg(currws, "login-wrong-password")
     elseif handle in Usernames[roomname]
         # Duplicated Username
-        return errormsg(currws, "duplicate-username")
+        return errormsg(currws, "login-duplicate-username")
     end
 
     push!(WSInRoom, currws)
@@ -105,7 +111,7 @@ end
 function leaveroom(currws)
     removereferences(currws)
     msg = Dict{String, Any}()
-    msg["responsetype"] = "left-room"
+    msg["responsetype"] = "room-left-room"
     msg["server-time"] = Dates.now()
 
     writeguarded(ws, JSON.json(msg))
@@ -116,7 +122,7 @@ end
 function roomsuccess(currws)
     # Send join-room
     msg = Dict{String, Any}()
-    msg["responsetype"] = "joined-room"
+    msg["responsetype"] = "room-joined-room"
 
     roomname = getRoomfromWS[currws]
     handle = getHandlefromWS[currws]
@@ -142,7 +148,7 @@ end
 
 function playerjoined(listofws, handle)
     msg = Dict{String, Any}()
-    msg["responsetype"] = "player-joined"
+    msg["responsetype"] = "room-player-joined"
     msg["user"] = handle
     msg["server-time"] = Dates.now()
     return broadcastmsg(listofws, JSON.json(msg),
@@ -151,7 +157,7 @@ end
 
 function playerdisconnected(listofws, handle)
     msg = Dict{String, Any}()
-    msg["responsetype"] = "player-disconnected"
+    msg["responsetype"] = "room-player-disconnected"
     msg["user"] = handle
     msg["server-time"] = Dates.now()
 

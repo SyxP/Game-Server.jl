@@ -21,13 +21,13 @@ const HTTPPORT = 8080
 
 getFile(str) = read(joinpath(@__DIR__,str), String)
 
-const validSuffix = Dict("/"           => getFile("web/index.html"), 
-                         "/index.html" => getFile("web/index.html"), 
-                         "/style.css"  => getFile("web/style.css"), 
-                         "/comms.js"  => getFile("web/comms.js"), 
+const validSuffix = Dict("/"              => getFile("web/index.html"), 
+                         "/index.html"    => getFile("web/index.html"), 
+                         "/style.css"     => getFile("web/style.css"), 
+                         "/comms.js"      => getFile("web/comms.js"), 
                          "/myprompts.js"  => getFile("web/myprompts.js"), 
-                         "/login.js"  => getFile("web/login.js"), 
-                         "/room.js"  => getFile("web/room.js"))
+                         "/login.js"      => getFile("web/login.js"), 
+                         "/room.js"       => getFile("web/room.js"))
 
 function HTMLHandler(req::Request)
     if req.method == "GET" && haskey(validSuffix, req.target)
