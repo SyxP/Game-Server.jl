@@ -28,6 +28,53 @@ login.blinkField = function(field) {
 
 login.show = function(show) {
     login.window.style.display = show ? "block" : "none";
+    if (!show) {
+        login.errorMessage.innerHTML = "";
+        login.passwordField.value = "";
+    }
+};
+
+login.handleMessage = function(msg) {
+    let msgType = msg.responsetype;
+    switch (msgType) {
+        case "login-invalid-handle-error":
+            login.setErrorStatus("Invalid handle.");
+            myprompts.hideAll();
+            login.blinkField(login.handleField);
+            login.handleField.focus();
+            break;
+        case "login-invalid-roomname-error":
+            login.setErrorStatus("Invalid room name.");
+            myprompts.hideAll();
+            login.blinkField(login.roomField);
+            login.roomField.focus();
+            break;
+        case "login-room-exists-error":
+            login.setErrorStatus("Room already exists.");
+            myprompts.hideAll();
+            login.blinkField(login.roomField);
+            login.roomField.focus();
+            break;
+        case "login-room-missing-error":
+            login.setErrorStatus("Room doesn't exist.");
+            myprompts.hideAll();
+            login.blinkField(login.roomField);
+            login.roomField.focus();
+            break;
+        case "login-wrong-password-error":
+            login.setErrorStatus("Incorrect password.");
+            myprompts.hideAll();
+            login.blinkField(login.passwordField);
+            login.passwordField.value = "";
+            login.passwordField.focus();
+            break;
+        case "login-duplicate-username-error":
+            login.setErrorStatus("Handle has already been chosen.");
+            myprompts.hideAll();
+            login.blinkField(login.handleField);
+            login.handleField.focus();
+            break;
+    }
 };
 
 login.joinRoomBtn.onclick = function() {

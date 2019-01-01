@@ -17,14 +17,20 @@ myprompts.hideAll = function() {
         p.style.display = "none";
 };
 
-myprompts.showPrompt = function(wnd, msg) {
+myprompts.showPrompt = function(wnd, msg, exec) {
     myprompts.hideAll();
     wnd.body.innerHTML = msg;
+    if (exec)
+        myprompts.okayPromptBtn.onclick = function () {
+            myprompts.hideAll();
+            exec();
+        };
+    else
+        myprompts.okayPromptBtn.onclick = myprompts.hideAll;
     myprompts.overlay.style.display = "block";
     wnd.style.display = "block";
+    myprompts.okayPromptBtn.focus();
 };
-
-myprompts.okayPromptBtn.onclick = myprompts.hideAll;
 
 myprompts.allPrompts = [
     myprompts.okayPrompt,

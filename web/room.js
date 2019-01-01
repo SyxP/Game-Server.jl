@@ -2,6 +2,7 @@ var room = room || {};
 
 room.userList = [];
 room.spectatorList = [];
+room.isSpectator = false;
 room.inProgress = false;
 room.window = document.getElementById("room-panel");
 room.title = document.getElementById("room-title");
@@ -53,6 +54,75 @@ room.updateDisplay = function() {
     }
 };
 
+room.spectate = function() {
+    let content = {
+        "querytype": "change-state-spectate"
+    };
+    comms.sendMessage(content);
+};
+
+room.play = function() {
+    let content = {
+        "querytype": "change-state-play"
+    };
+    comms.sendMessage(content);
+};
+
 room.show = function(show) {
     room.window.style.display = show ? "flex" : "none";
+};
+
+room.handleMessage = function(msg) {
+    let msgType = msg.responsetype;
+    switch (msgType) {
+        case "room-joined-room":
+            room.userList = msg["users"].sort();
+            room.spectatorList = msg["spectation-list"].sort();
+            room.isSpectator = false;
+            room.setTitle(msg["room-name"]);
+            room.updatePlayers();
+            room.inProgress = msg["game-ongoing"];
+            if (room.inProgress)
+                room.gameState = msg["game-status"];
+            room.updateDisplay();
+            login.show(false);
+            room.show(true);
+            myprompts.showPrompt(myprompts.okayPrompt,
+                                 "Welcome to " + msg["room-name"] + "!");
+            break;
+        case "room-player-joined":
+            room.userList.push(msg["user"]);
+            room.userList.sort();
+            room.updatePlayers();
+            break;
+        case "room-player-disconnected":
+            room.userList = room.userList.filter(x => x !== msg["user"]);
+            room.updatePlayers();
+            break;
+        case "room-left-room":
+            myprompts.hideAll();
+            room.show(false);
+            login.show(true);
+            break;
+        case "room-change-status-spectate":
+            room.spectatorList.push(msg["handle"]);
+            room.spectatorList.sort();
+            room.updatePlayers();
+            if (msg["handle"] === room.myHandle) {
+                myprompts.showPrompt(myprompts.okayPrompt,
+                                     "You are now spectating.");
+                room.isSpectator = true;
+            }
+            break;
+        case "room-change-status-play":
+            room.spectatorList = room.spectatorList.filter(
+                x => x !== msg["handle"]);
+            room.updatePlayers();
+            if (msg["handle"] === room.myHandle) {
+                myprompts.showPrompt(myprompts.okayPrompt,
+                                     "You are queued for the game.");
+                room.isSpectator = false;
+            }
+            break;
+    }
 };

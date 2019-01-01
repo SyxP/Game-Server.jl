@@ -50,51 +50,12 @@ comms.sendMessage = function(msg) {
 comms.receiveMessage = function(msgData) {
     let msg = JSON.parse(msgData);
     let msgType = msg.responsetype;
-    switch (msgType) {
-        case "room-exists-error":
-            login.setErrorStatus("Room already exists.");
-            myprompts.hideAll();
-            login.blinkField(login.roomField);
-            break;
-        case "room-missing-error":
-            login.setErrorStatus("Room doesn't exist.");
-            myprompts.hideAll();
-            login.blinkField(login.roomField);
-            break;
-        case "wrong-password-error":
-            login.setErrorStatus("Incorrect password.");
-            myprompts.hideAll();
-            login.blinkField(login.passwordField);
-            break;
-        case "duplicate-username-error":
-            login.setErrorStatus("Handle has already been chosen.");
-            myprompts.hideAll();
-            login.blinkField(login.handleField);
-            break;
-        case "joined-room":
-            room.userList = msg["users"].sort();
-            room.spectatorList = msg["spectation-list"].sort();
-            room.setTitle(msg["room-name"]);
-            room.updatePlayers();
-            room.inProgress = msg["game-ongoing"];
-            if (room.inProgress)
-                room.gameState = msg["game-status"];
-            room.updateDisplay();
-            login.show(false);
-            room.show(true);
-            myprompts.showPrompt(myprompts.okayPrompt,
-                                 "Welcome to " + msg["room-name"] + "!");
-            break;
-        case "player-joined":
-            room.userList.push(msg["user"]);
-            room.userList.sort();
-            room.updatePlayers();
-            break;
-        case "player-disconnected":
-            room.userList = room.userList.filter(x => x !== msg["user"]);
-            room.updatePlayers();
-            break;
-    }
+    if (msgType.startsWith("login-"))
+        login.handleMessage(msg);
+    else if (msgType.startsWith("room-"))
+        room.handleMessage(msg);
+    else if (msgType.startsWith("game-"))
+        game.handleMessage(msg);
 };
 
 window.onload = comms.load;
