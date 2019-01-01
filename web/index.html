@@ -9,12 +9,16 @@
         <link href="https://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet">
     </head>
     <body>
-        <div id="server-status" class="above">
-            <h3 id="server-message"> </h3>
-            <button id="server-status-clear"> Okay </button>
+        <div id="message-prompt" class="prompt">
+            <h3 id="message-prompt-body"> </h3>
         </div>
         
-        <div id="overlay" style="display: none;"> </div>
+        <div id="okay-prompt" class="prompt">
+            <h3 id="okay-prompt-body"> </h3>
+            <button id="okay-prompt-btn-okay"> Okay </button>
+        </div>
+        
+        <div id="overlay"> </div>
 
         <div id="login-panel">
             <h1>Yes, Please!</h1>
@@ -37,7 +41,7 @@
         </div>
         
         <div id="room-panel" style="display: none;">
-            <h1 id="room-title">Yes,&nbsp;Please! Room:&nbsp;</h1>
+            <h1 id="room-title"></h1>
             <div style="flex: 1;">
                 <div id="room-board">
                     
@@ -49,6 +53,9 @@
             </div>
         </div>
         
-        <script src="script.js"> </script>
+        <script src="comms.js"> </script>
+        <script src="myprompts.js"> </script>
+        <script src="login.js"> </script>
+        <script src="room.js"> </script>
     </body>
 </html>

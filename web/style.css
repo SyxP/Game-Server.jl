@@ -10,26 +10,23 @@ body {
     z-index: 1;
 }
 
-.above {
-    z-index: 3 !important;
-}
-
-#server-status {
+.prompt {
     position: fixed;
     display: none;
     width: 400px;
     background: #F8FDFF;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -100%);
+    transform: translate(-50%, -50%);
     border-radius: 10px;
+    z-index: 3 !important;
 }
 
-#server-status h3 {
+.prompt h3 {
     text-align: center;
 }
 
-#server-status button {
+.prompt button {
     position: relative;
     margin: 2%;
     border-radius: 3px;
@@ -42,8 +39,21 @@ body {
     color: #F8FDFF;
 }
 
-#server-status button:hover {
+.prompt button:hover {
     background: #11779F;
+}
+
+.anim-blinkerror {
+    animation-duration: 250ms;
+    animation-timing-function: step-start;
+    animation-iteration-count: 3;
+    animation-name: blinkerror;
+}
+
+@keyframes blinkerror {
+    50% {
+        border-color: #FF0000;
+    }
 }
 
 #overlay {
