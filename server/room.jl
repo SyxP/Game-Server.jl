@@ -132,7 +132,8 @@ function roomsuccess(currws)
     msg["game-ongoing"] = haskey(RoomGames, roomname)
     msg["room-name"] = roomname
     msg["server-time"] = Dates.now()
-    msg["spectation-list"] = getSpectators(roomname)
+    # Only include online players in spectation-list
+    msg["spectation-list"] = filter(x -> x in getUsers(roomname), getSpectators(roomname))
     if haskey(RoomGames, roomname)
         # Send Game State to Player
         msg["game-status"] = gameState(RoomGames[roomname])
@@ -142,14 +143,15 @@ function roomsuccess(currws)
     writeguarded(currws, JSON.json(msg))
 
     # Send the rest of players a player-join message
-    playerjoined(RoomDict[roomname], getHandlefromWS[currws])
+    playerjoined(RoomDict[roomname], handle, roomname)
     nothing
 end
 
-function playerjoined(listofws, handle)
+function playerjoined(listofws, handle, roomname)
     msg = Dict{String, Any}()
     msg["responsetype"] = "room-player-joined"
     msg["user"] = handle
+    msg["is-spectator"] = handle in getSpectators(roomname)
     msg["server-time"] = Dates.now()
     return broadcastmsg(listofws, JSON.json(msg),
                         cond = x -> (getHandlefromWS[x] != handle))
