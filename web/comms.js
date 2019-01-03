@@ -27,7 +27,9 @@ comms.addWebSocket = function(instanceName, subprotocol) {
         myprompts.showPrompt(myprompts.messagePrompt, "Error: " + e);
     };
     ws.onopen = function(e) {
-        myprompts.showPrompt(myprompts.okayPrompt, "Successfully connected!");
+        myprompts.showPrompt(myprompts.okayPrompt,
+                             "Successfully connected!",
+                             () => login.handleField.focus());
     };
     ws.onclose = function(e) {
         myprompts.showPrompt(myprompts.messagePrompt,

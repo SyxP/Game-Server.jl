@@ -151,6 +151,14 @@ button {
     flex-flow: column nowrap;
 }
 
+#room-panel #room-title {
+    color: #323032;
+    font-size: 32px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
 #room-panel #room-board {
     float: left;
     width: calc(80% - 40px);
@@ -169,27 +177,14 @@ button {
     padding: 0;
 }
 
-#room-panel #room-side-legend {
-    margin: 0;
-    padding: 0;
-}
-
-#room-panel #room-title {
-    color: #323032;
-    font-size: 32px;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-}
-
-#room-panel #room-players-container {
+#room-panel #room-side .room-side-container {
     overflow: auto;
-    margin: 10px;
-    margin-left: 0;
+    border: medium solid;
+    margin: 0px 10px 10px 0px;
     flex: 1;
 }
 
-#room-panel #room-players {
+#room-panel #room-side .room-side-list {
     height: 100%;
     font-family: 'Ubuntu Mono';
     font-weight: bold;
@@ -200,14 +195,14 @@ button {
     margin: 0;
 }
 
-#room-panel .user-player {
+#room-panel #room-side #room-players {
     list-style-type: "\25B8";
 }
 
-#room-panel .user-spectator {
+#room-panel #room-side #room-spectators {
     list-style-type: "\25B9";
 }
 
-#room-panel .user-me {
+#room-panel #room-side .user-me {
     color: #008000;
 }
