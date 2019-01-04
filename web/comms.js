@@ -42,7 +42,7 @@ comms.sendMessage = function(msg) {
         comms.ws.send(msgData);
         return true;
     }
-    comms.setWSStatus("WebSocket not ready. Reload page or check server!");
+    myprompts.showPrompt("WebSocket not ready. Reload page or check server!");
     return false;
 };
 
