@@ -1,9 +1,11 @@
 var room = room || {};
 
+room.myHandle = "";
 room.userList = [];
 room.spectatorList = [];
 room.isSpectator = false;
 room.inProgress = false;
+
 room.window = document.getElementById("room-panel");
 room.title = document.getElementById("room-title");
 room.userDisplay = document.getElementById("room-players");
@@ -69,8 +71,12 @@ room.play = function() {
     comms.sendMessage(content);
 };
 
-room.show = function(show) {
+room.window.show = function(show) {
     room.window.style.display = show ? "flex" : "none";
+};
+
+room.window.enableFocus = function(enabled) {
+    // Todo
 };
 
 room.handleMessage = function(msg) {
@@ -79,31 +85,36 @@ room.handleMessage = function(msg) {
         case "room-joined-room":
             room.userList = msg["users"].sort();
             room.spectatorList = msg["spectation-list"].sort();
-            room.isSpectator = false;
+            room.isSpectator = room.spectatorList.includes(room.myHandle);
             room.setTitle(msg["room-name"]);
             room.updatePlayers();
             room.inProgress = msg["game-ongoing"];
             if (room.inProgress)
                 room.gameState = msg["game-status"];
             room.updateDisplay();
-            login.show(false);
-            room.show(true);
-            myprompts.showPrompt(myprompts.okayPrompt,
-                                 "Welcome to " + msg["room-name"] + "!");
+            winStack.setWindow(room.window);
+            myprompts.showPrompt("Welcome to " + msg["room-name"] + "!",
+                                 ["Okay"]);
             break;
         case "room-player-joined":
             room.userList.push(msg["user"]);
             room.userList.sort();
+            if (msg["is-spectator"]) {
+                if (!room.spectatorList.includes(msg["user"])) {
+                    room.spectatorList.push(msg["user"]);
+                    room.spectatorList.sort();
+                }
+            }
             room.updatePlayers();
             break;
         case "room-player-disconnected":
             room.userList = room.userList.filter(x => x !== msg["user"]);
+            room.spectatorList = room.spectatorList.filter(
+                x => x !== msg["user"]);
             room.updatePlayers();
             break;
         case "room-left-room":
-            myprompts.hideAll();
-            room.show(false);
-            login.show(true);
+            winStack.setWindow(login.window);
             break;
         case "room-change-status-spectate":
             if (!room.spectatorList.includes(msg["handle"])) {
@@ -111,8 +122,7 @@ room.handleMessage = function(msg) {
                 room.spectatorList.sort();
                 room.updatePlayers();
                 if (msg["handle"] === room.myHandle) {
-                    myprompts.showPrompt(myprompts.okayPrompt,
-                                         "You are now spectating.");
+                    myprompts.showPrompt("You are now spectating.", ["Okay"]);
                     room.isSpectator = true;
                 }
             }
@@ -122,10 +132,18 @@ room.handleMessage = function(msg) {
                 x => x !== msg["handle"]);
             room.updatePlayers();
             if (msg["handle"] === room.myHandle) {
-                myprompts.showPrompt(myprompts.okayPrompt,
-                                     "You are queued for the game.");
+                myprompts.showPrompt("You are queued for the game.", ["Okay"]);
                 room.isSpectator = false;
             }
             break;
+    }
+};
+
+room.handleGameMessage = function(msg) {
+    let msgType = msg.responsetype;
+    switch (msgType) {
+        case game-game-started:
+            room.inProgress = true;
+            room.updateDisplay();
     }
 };

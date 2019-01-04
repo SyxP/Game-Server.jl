@@ -12,7 +12,6 @@ body {
 
 .prompt {
     position: fixed;
-    display: none;
     width: 400px;
     background: #F8FDFF;
     top: 50%;
@@ -22,8 +21,14 @@ body {
     z-index: 3 !important;
 }
 
-.prompt h3 {
+.prompt .prompt-body {
     text-align: center;
+}
+
+.prompt .prompt-buttons {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
 }
 
 .prompt button {
@@ -33,10 +38,10 @@ body {
     border: 2px solid #686c6d;
     box-sizing: border-box;
     padding: 4px;
-    width: 96%;
     font-size: 16px;
     background: #686c6d;
     color: #F8FDFF;
+    flex: 1;
 }
 
 .prompt button:hover {

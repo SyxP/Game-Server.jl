@@ -12,7 +12,7 @@ comms.load = function() {
     comms.ws.onmessage = function(e) {
         comms.receiveMessage(e.data);
     };
-    myprompts.showPrompt(myprompts.messagePrompt, "Connecting...");
+    myprompts.showPrompt("Connecting...");
 };
 
 comms.addWebSocket = function(instanceName, subprotocol) {
@@ -24,16 +24,13 @@ comms.addWebSocket = function(instanceName, subprotocol) {
         ws = new WebSocket(wsuri, subprotocol);
     ws.myName = instanceName;
     ws.onerror = function(e) {
-        myprompts.showPrompt(myprompts.messagePrompt, "Error: " + e);
+        myprompts.showPrompt("Error: " + e);
     };
     ws.onopen = function(e) {
-        myprompts.showPrompt(myprompts.okayPrompt,
-                             "Successfully connected!",
-                             () => login.handleField.focus());
+        myprompts.showPrompt("Successfully connected!", ["Okay"]);
     };
     ws.onclose = function(e) {
-        myprompts.showPrompt(myprompts.messagePrompt,
-                             "Disconnected. Reload page.");
+        myprompts.showPrompt("Disconnected. Reload page.");
     };
     
     return ws;
@@ -51,13 +48,12 @@ comms.sendMessage = function(msg) {
 
 comms.receiveMessage = function(msgData) {
     let msg = JSON.parse(msgData);
+    console.log(msg);
     let msgType = msg.responsetype;
     if (msgType.startsWith("login-"))
         login.handleMessage(msg);
     else if (msgType.startsWith("room-"))
         room.handleMessage(msg);
     else if (msgType.startsWith("game-"))
-        game.handleMessage(msg);
+        room.handleGameMessage(msg);
 };
-
-window.onload = comms.load;

@@ -27,7 +27,8 @@ const validSuffix = Dict("/"              => getFile("web/index.html"),
                          "/comms.js"      => getFile("web/comms.js"), 
                          "/myprompts.js"  => getFile("web/myprompts.js"), 
                          "/login.js"      => getFile("web/login.js"), 
-                         "/room.js"       => getFile("web/room.js"))
+                         "/room.js"       => getFile("web/room.js"),
+                         "/winstack.js"   => getFile("web/winstack.js"))
 
 function HTMLHandler(req::Request)
     if req.method == "GET" && haskey(validSuffix, req.target)

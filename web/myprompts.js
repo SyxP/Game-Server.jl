@@ -1,38 +1,69 @@
 var myprompts = myprompts || {};
 
+myprompts.currentPrompt = null;
+myprompts.lastResult = null;
+
 myprompts.overlay = document.getElementById("overlay");
 
-myprompts.okayPrompt = document.getElementById("okay-prompt");
-myprompts.okayPromptMessage = document.getElementById("okay-prompt-body");
-myprompts.okayPrompt.body = myprompts.okayPromptMessage;
-myprompts.okayPromptBtn = document.getElementById("okay-prompt-btn-okay");
-
-myprompts.messagePrompt = document.getElementById("message-prompt");
-myprompts.messagePromptMessage = document.getElementById("message-prompt-body");
-myprompts.messagePrompt.body = myprompts.messagePromptMessage;
-
-myprompts.hideAll = function() {
-    myprompts.overlay.style.display = "none";
-    for (let p of myprompts.allPrompts)
-        p.style.display = "none";
-};
-
-myprompts.showPrompt = function(wnd, msg, exec) {
-    myprompts.hideAll();
-    wnd.body.innerHTML = msg;
-    if (exec)
-        myprompts.okayPromptBtn.onclick = function () {
-            myprompts.hideAll();
-            exec();
-        };
+myprompts.showPrompt = function(message, buttons, default_opt) {
+    if (myprompts.currentPrompt !== null)
+        winStack.pop();
+    let prompt = document.createElement("div");
+    prompt.classList.add("prompt");
+    prompt.tabIndex = -1;
+    
+    if (typeof message === "string") {
+        let body = document.createElement("h3");
+        body.classList.add("prompt-body");
+        body.innerHTML = message;
+        prompt.appendChild(body);
+    }
     else
-        myprompts.okayPromptBtn.onclick = myprompts.hideAll;
-    myprompts.overlay.style.display = "block";
-    wnd.style.display = "block";
-    myprompts.okayPromptBtn.focus();
+        prompt.appendChild(message);
+    
+    let btns_e = [];
+    if (buttons && buttons.length > 0) {
+        let btns = document.createElement("div");
+        btns.classList.add("prompt-buttons");
+        for (let b of buttons) {
+            let btn = document.createElement("button");
+            btn.innerHTML = b;
+            btn.tabIndex = 0;
+            btn.onclick = function(e) {
+                myprompts.lastResult = b;
+                winStack.pop();
+            };
+            btns_e.push(btn);
+            btns.appendChild(btn);
+        }
+        prompt.appendChild(btns);
+    }
+    prompt.show = function(show) {
+        myprompts.overlay.style.display = show ? "block" : "none";
+        if (show) {
+            document.body.appendChild(prompt);
+            if (btns_e.length > 0) {
+                let i = default_opt || 0;
+                btns_e[i].focus();
+            }
+            else
+                prompt.focus();
+        }
+        else {
+            document.body.removeChild(prompt);
+            myprompts.currentPrompt = null;
+            myprompts.overlay.style.display = "none";
+        }
+    };
+    prompt.enableFocus = function(enabled) {
+        for (let b of btns_e)
+            btns_e.tabIndex = enabled ? 0 : -1;
+    };
+    myprompts.currentPrompt = prompt;
+    winStack.push(prompt);
 };
 
-myprompts.allPrompts = [
-    myprompts.okayPrompt,
-    myprompts.messagePrompt
-];
+myprompts.clearPrompt = function() {
+    if (myprompts.currentPrompt !== null)
+        winStack.pop();
+};
