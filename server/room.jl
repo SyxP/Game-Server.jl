@@ -114,7 +114,7 @@ function leaveroom(currws)
     msg["responsetype"] = "room-left-room"
     msg["server-time"] = Dates.now()
 
-    writeguarded(ws, JSON.json(msg))
+    writeguarded(currws, JSON.json(msg))
 
     nothing
 end
