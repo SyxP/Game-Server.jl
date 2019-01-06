@@ -17,7 +17,7 @@ login.getParticulars = function() {
 };
 
 login.setErrorStatus = function(msg) {
-    login.errorMessage.innerHTML = msg;
+    login.errorMessage.textContent = msg;
 };
 
 login.blinkField = function(field) {

@@ -15,7 +15,7 @@ myprompts.showPrompt = function(message, buttons, default_opt) {
     if (typeof message === "string") {
         let body = document.createElement("h3");
         body.classList.add("prompt-body");
-        body.innerHTML = message;
+        body.textContent = message;
         prompt.appendChild(body);
     }
     else
@@ -27,7 +27,7 @@ myprompts.showPrompt = function(message, buttons, default_opt) {
         btns.classList.add("prompt-buttons");
         for (let b of buttons) {
             let btn = document.createElement("button");
-            btn.innerHTML = b;
+            btn.textContent = b;
             btn.tabIndex = 0;
             btn.onclick = function(e) {
                 myprompts.lastResult = b;

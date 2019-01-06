@@ -13,7 +13,7 @@ room.specDisplay = document.getElementById("room-spectators");
 room.board = document.getElementById("room-board");
 
 room.setTitle = function(str) {
-    room.title.innerHTML = "Yes, Please!<br>Room: " + str;
+    room.title.textContent = "Yes, Please!\nRoom: " + str;
 };
 
 room.updatePlayers = function() {
@@ -36,14 +36,14 @@ room.updatePlayers = function() {
         let li = document.createElement("li");
         if (u === room.myHandle)
             li.classList.add("user-me");
-        li.innerHTML = u;
+        li.textContent = u;
         room.userDisplay.appendChild(li);
     }
     for (let u of spectators) {
         let li = document.createElement("li");
         if (u === room.myHandle)
             li.classList.add("user-me");
-        li.innerHTML = u;
+        li.textContent = u;
         room.specDisplay.appendChild(li);
     }
 };
