@@ -5,7 +5,11 @@ myprompts.lastResult = null;
 
 myprompts.overlay = document.getElementById("overlay");
 
-myprompts.showPrompt = function(message, buttons, default_opt) {
+myprompts.showPrompt = function(message,
+                                buttons,
+                                default_opt,
+                                cancel_opt,
+                                callback) {
     if (myprompts.currentPrompt !== null)
         winStack.pop();
     let prompt = document.createElement("div");
@@ -29,10 +33,12 @@ myprompts.showPrompt = function(message, buttons, default_opt) {
             let btn = document.createElement("button");
             btn.textContent = b;
             btn.tabIndex = 0;
-            btn.onclick = function(e) {
+            btn.addEventListener("click", function(e) {
                 myprompts.lastResult = b;
                 winStack.pop();
-            };
+                if (callback)
+                    callback(b);
+            });
             btns_e.push(btn);
             btns.appendChild(btn);
         }
@@ -55,9 +61,37 @@ myprompts.showPrompt = function(message, buttons, default_opt) {
             myprompts.overlay.style.display = "none";
         }
     };
-    prompt.enableFocus = function(enabled) {
-        for (let b of btns_e)
-            btns_e.tabIndex = enabled ? 0 : -1;
+    prompt.handleKey = function(event) {
+        let cancel = false;
+        switch (event.key) {
+            case "Enter":
+                if (document.activeElement.tagName !== "BUTTON") {
+                    if (btns_e.length === 1) {
+                        btns_e[0].click();
+                        cancel = true;
+                    }
+                    else if (btns_e.length > 1 &&
+                             typeof default_opt !== "undefined") {
+                        btns_e[default_opt].click();
+                        cancel = true;
+                    }
+                }
+                break;
+            case "Escape":
+                if (btns_e.length === 1) {
+                    btns_e[0].click();
+                    cancel = true;
+                }
+                else if (btns_e.length > 1 &&
+                         typeof cancel_opt !== "undefined") {
+                    btns_e[cancel_opt].click();
+                    cancel = true;
+                }
+        }
+        if (cancel) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
     };
     myprompts.currentPrompt = prompt;
     winStack.push(prompt);

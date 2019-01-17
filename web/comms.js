@@ -9,9 +9,9 @@ comms.readyStateDesc = {
 
 comms.load = function() {
     comms.ws = comms.addWebSocket("ws");
-    comms.ws.onmessage = function(e) {
+    comms.ws.addEventListener("message", function(e) {
         comms.receiveMessage(e.data);
-    };
+    });
     myprompts.showPrompt("Connecting...");
 };
 
@@ -23,15 +23,15 @@ comms.addWebSocket = function(instanceName, subprotocol) {
     else
         ws = new WebSocket(wsuri, subprotocol);
     ws.myName = instanceName;
-    ws.onerror = function(e) {
+    ws.addEventListener("error", function(e) {
         myprompts.showPrompt("Error: " + e);
-    };
-    ws.onopen = function(e) {
+    });
+    ws.addEventListener("open", function(e) {
         myprompts.showPrompt("Successfully connected!", ["Okay"]);
-    };
-    ws.onclose = function(e) {
+    });
+    ws.addEventListener("close", function(e) {
         myprompts.showPrompt("Disconnected. Reload page.");
-    };
+    });
     
     return ws;
 };

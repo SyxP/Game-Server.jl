@@ -33,16 +33,25 @@ login.window.show = function(show) {
     else {
         login.errorMessage.innerHTML = "";
         login.passwordField.value = "";
+        login.handleField.classList.remove("anim-blinkerror");
+        login.roomField.classList.remove("anim-blinkerror");
+        login.passwordField.classList.remove("anim-blinkerror");
     }
 };
 
-login.window.enableFocus = function(enabled) {
-    let val = enabled ? 0 : -1;
-    login.handleField.tabIndex = val;
-    login.roomField.tabIndex = val;
-    login.passwordField.tabIndex = val;
-    login.joinRoomBtn.tabIndex = val;
-    login.makeRoomBtn.tabIndex = val;
+login.window.handleKey = function(event) {
+    switch (event.key) {
+        case "Enter":
+            if (document.activeElement.tagName === "BUTTON")
+                break;
+            if (event.ctrlKey)
+                login.makeRoomBtn.click();
+            else
+                login.joinRoomBtn.click();
+            event.preventDefault();
+            event.stopPropagation();
+            break;
+    }
 };
 
 login.handleMessage = function(msg) {
@@ -53,24 +62,28 @@ login.handleMessage = function(msg) {
             myprompts.clearPrompt();
             login.blinkField(login.handleField);
             login.handleField.focus();
+            login.handleField.select();
             break;
         case "login-invalid-roomname-error":
             login.setErrorStatus("Invalid room name.");
             myprompts.clearPrompt();
             login.blinkField(login.roomField);
             login.roomField.focus();
+            login.roomField.select();
             break;
         case "login-room-exists-error":
             login.setErrorStatus("Room already exists.");
             myprompts.clearPrompt();
             login.blinkField(login.roomField);
             login.roomField.focus();
+            login.roomField.select();
             break;
         case "login-room-missing-error":
             login.setErrorStatus("Room doesn't exist.");
             myprompts.clearPrompt();
             login.blinkField(login.roomField);
             login.roomField.focus();
+            login.roomField.select();
             break;
         case "login-wrong-password-error":
             login.setErrorStatus("Incorrect password.");
@@ -84,11 +97,12 @@ login.handleMessage = function(msg) {
             myprompts.clearPrompt();
             login.blinkField(login.handleField);
             login.handleField.focus();
+            login.handleField.select();
             break;
     }
 };
 
-login.joinRoomBtn.onclick = function() {
+login.joinRoomBtn.addEventListener("click", function(e) {
     room.myHandle = login.handleField.value;
     let content = {
         "querytype":   "join-room",
@@ -96,9 +110,9 @@ login.joinRoomBtn.onclick = function() {
     };
     myprompts.showPrompt("Please wait...");
     comms.sendMessage(content);
-};
+});
 
-login.makeRoomBtn.onclick = function() {
+login.makeRoomBtn.addEventListener("click", function(e) {
     room.myHandle = login.handleField.value;
     let content = {
         "querytype":   "make-room",
@@ -106,4 +120,4 @@ login.makeRoomBtn.onclick = function() {
     };
     myprompts.showPrompt("Please wait...");
     comms.sendMessage(content);
-};
+});

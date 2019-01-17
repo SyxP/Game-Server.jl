@@ -8,6 +8,11 @@ body {
 * {
     transition: 0.1s ease-in-out;
     z-index: 1;
+    box-sizing: border-box;
+}
+
+tt {
+    font-family: 'Ubuntu Mono';
 }
 
 .prompt {
@@ -18,7 +23,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 10px;
-    z-index: 3 !important;
+    z-index: 5 !important;
 }
 
 .prompt .prompt-body {
@@ -36,7 +41,6 @@ body {
     margin: 2%;
     border-radius: 3px;
     border: 2px solid #686c6d;
-    box-sizing: border-box;
     padding: 4px;
     font-size: 16px;
     background: #686c6d;
@@ -93,7 +97,6 @@ body {
     margin: 1%;
     border-radius: 3px;
     border: 2px solid #686c6d;
-    box-sizing: border-box;
     padding: 4px;
     width: 48%;
     font-size: 16px;
@@ -169,7 +172,82 @@ button {
     float: left;
     width: calc(80% - 40px);
     height: calc(100% - 40px);
-    padding: 20px;
+    margin: 20px;
+    border: medium solid;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: stretch;
+}
+
+#room-panel #room-board #room-board-top {
+    position: relative;
+    width: 100%;
+    min-height: 0px;
+    flex: 1;
+    overflow: hidden;
+}
+
+#room-panel #room-board #room-board-top #room-display {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+#room-panel #room-board #room-board-top #room-input-result {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    min-height: 48px;
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 16px 16px 0px 16px;
+    border-radius: 12px 12px 0px 0px;
+    background-color: rgb(60,60,60, 0.9);
+    color: #F8FDFF;
+    z-index: 2;
+    transform: translateY(100%);
+    visibility: hidden;
+    transition: all 0.5s ease-out;
+}
+
+#room-panel #room-board #room-board-top .show-result {
+    transform: translateY(0%) !important;
+    visibility: visible !important;
+}
+
+#room-panel #room-board #room-board-top #room-input-result #room-close-result {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    background-color: #686c6d;
+}
+
+#room-panel #room-board #room-board-top #room-input-result #room-close-result:hover {
+    background-color: #B32728;
+}
+
+#room-panel #room-board #room-board-top #room-input-result .room-close-result-x {
+    position: absolute;
+    background-color: #F8FDFF;
+    width: 80%;
+    height: 10%;
+    top: 45%;
+    left: 10%;
+    border-radius: 50%;
+}
+
+#room-panel .room-link {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#room-panel #room-input-user {
+    font-family: 'Ubuntu Mono';
+    font-size: 16px;
+    width: 100%;
 }
 
 #room-panel #room-side {
@@ -201,12 +279,32 @@ button {
     margin: 0;
 }
 
+@counter-style counter-player {
+    system: cyclic;
+    symbols: "\25B8";
+    suffix: " ";
+}
+
 #room-panel #room-side #room-players {
-    list-style-type: "\25B8";
+    list-style-type: none;
+    margin-left: 0px;
+    padding-left: 1em;
+    text-indent: -1em;
+}
+
+#room-panel #room-side #room-players li::before {
+    content: "\25B8";
 }
 
 #room-panel #room-side #room-spectators {
-    list-style-type: "\25B9";
+    list-style-type: none;
+    margin-left: 0px;
+    padding-left: 1em;
+    text-indent: -1em;
+}
+
+#room-panel #room-side #room-spectators li::before {
+    content: "\25B9";
 }
 
 #room-panel #room-side .user-me {
