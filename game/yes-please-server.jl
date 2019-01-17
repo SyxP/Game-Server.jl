@@ -27,8 +27,9 @@ function startnewYP(currws)
         #Ongoing Game
         return errormsg(currws, "room-game-ongoing")
     end
-    
+        
     playerlist = getPlayers(roomname)
+    
     if length(playerlist) <= 2
         return errormsg(currws, "room-insufficient-players")
     elseif length(playerlist) > 5

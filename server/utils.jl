@@ -35,5 +35,5 @@ end
 
 function getPlayers(roomname)
     (!haskey(SpecDict, roomname)) && return getUsers(roomname)
-    return filter(x -> !(x in SpecDict), getUsers(roomname))
+    return filter(x -> !(x in SpecDict[roomname]), getUsers(roomname))
 end
